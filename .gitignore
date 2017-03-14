@@ -1,0 +1,55 @@
+
+# Project related
+!.gitkeep
+node_modules
+bower_components
+tmp
+dist
+src/public/css
+
+# Express
+src/public/stylesheets/*.css
+
+# IDEs, tools, linters
+.idea
+coverage
+*.sublime-workspace
+
+# OS X
+.DS_Store*
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+*~
+
+# npm
+*.log
+*.gz
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Optional REPL history
+.node_repl_history
+
+# Junk
+core.*
+build
