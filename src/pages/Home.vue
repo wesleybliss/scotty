@@ -46,11 +46,11 @@ export default {
             this.specificWindow = name
             console.log( 'source', name )
         },
-        _captureScreenshot( optionalWindowName ) {
+        _captureScreenshot( optionalWindowName, redirectUri ) {
             takeScreenshot( optionalWindowName || false )
                 .then( screenshotPath => {
                     this.setPendingFilePath( screenshotPath )
-                    router.push( '/post-process' )
+                    router.push( redirectUri || '/post-process' )
                     remote.getCurrentWindow().show()
                 })
                 .catch( err => {
@@ -61,12 +61,19 @@ export default {
         captureScreenshot() {
             
             switch ( this.type ) {
+                
                 case this.TYPES.SPECIFIC_WINDOW:
                     return this._captureScreenshot( this.specificWindow )
+                
+                case this.TYPES.SELECT_AREA:
+                    remote.getCurrentWindow().hide()
+                    return setTimeout( this._captureScreenshot( false, '/select-area' ), 500 )
+                
                 case this.TYPES.WHOLE_SCREEN:
                 default:
                     remote.getCurrentWindow().hide()
                     return setTimeout( this.captureFullscreen, 500 )
+                
             }
             
         }
@@ -113,7 +120,7 @@ export default {
                 input(v-model="type", type="radio", name="type", value="specific-window")
                 span &nbsp;Grab
                 i(v-if="specificWindow") &nbsp;{{ specificWindow }}
-                .list-group.mt-2
+                .list-group.mt-2(v-if="type === TYPES.SPECIFIC_WINDOW")
                     a.list-group-item.list-group-item-action(
                         v-for="source in sources",
                         @click.prevent.default="selectSource( source.name )",

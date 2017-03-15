@@ -7,13 +7,20 @@ export default {
     name: 'SelectArea',
     data: () => {
         return {
+            canvasBackground: null,
             canvas: null,
             context: null,
             startX: null,
             endX: null,
             startY: null,
             endY: null,
-            mouseIsDown: false
+            mouseIsDown: false,
+            cropArea: {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            }
         }
     },
     methods: {
@@ -35,6 +42,8 @@ export default {
             let pos = this.getMousePos(event)
             this.endX = pos.x
             this.endY = pos.y
+            
+            this.cropImage()
             
         },
         getMousePos( event ) {
@@ -61,6 +70,11 @@ export default {
             let width = Math.abs( w )
             let height = Math.abs( h )
             
+            this.cropArea.x = this.startX + offsetX
+            this.cropArea.y = this.startY + offsetY
+            this.cropArea.width = width
+            this.cropArea.height = height
+            
             this.clearCanvas()
             this.context.beginPath()
             this.context.rect( this.startX + offsetX, this.startY + offsetY, width, height )
@@ -78,10 +92,33 @@ export default {
             let ar = this.calculateAR( width, height )
             let newHeight = newWidth / ar
             return newHeight
+        },
+        cropImage() {
+            
+            let tempImage = new Image()
+            
+            tempImage.onload = () => {
+                this.clearCanvas()
+                this.context.drawImage(
+                    // imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight
+                    tempImage,
+                    this.cropArea.x,
+                    this.cropArea.y,
+                    this.cropArea.width,
+                    this.cropArea.height,
+                    0, 0,
+                    this.cropArea.width,
+                    this.cropArea.height
+                )
+            }
+            
+            tempImage.src = this.canvasBackground.toDataURL( 'image/png', 1 )
+            
         }
     },
     mounted() {
         
+        this.canvasBackground = document.getElementById('canvas-background')
         this.canvas = document.getElementById('canvas')
         this.context = this.canvas.getContext('2d')
         
