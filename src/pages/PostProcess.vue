@@ -2,7 +2,7 @@
 
 import router from '../lib/router'
 import { mapGetters, mapActions } from 'vuex'
-import { remote, ipcRenderer } from 'electron'
+import { remote } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { takeScreenshot } from '../lib/screenshot'
@@ -12,11 +12,23 @@ export default {
     name: 'PostProcess',
     data: () => {
         return {
+            
             homePath: remote.app.getPath('home'),
             homeFolders: [],
             picturesPath: remote.app.getPath('pictures'),
             saveFileName: 'Screenshot from ' + moment().format( 'YYYY-MM-DD h-mm-ssa' ) + '.png',
-            saveFilePath: remote.app.getPath('pictures')
+            saveFilePath: remote.app.getPath('pictures'),
+            
+            nativeImageInstance: null,
+            
+            btnCopyToClipboardEnabled: true,
+            btnCopyToClipboardLabel: 'Copy to Clipboard',
+            btnCopyToClipboardTimer: -1,
+            
+            btnSaveEnabled: true,
+            btnSaveLabel: 'Save',
+            btnSaveTimer: -1
+            
         }
     },
     computed: {
@@ -24,31 +36,86 @@ export default {
             hasPendingFile: 'hasPendingFile',
             pendingFilePath: 'getPendingFilePath'
         }),
-        homeFoldersDivider() {
-            return this.homeFolders.length < 1
-                ? '' : '─'.repeat( this.homeFolders.reduce(
-                    ( a, b ) => a.length > b.length ? a : b ) )
+        fullSavePath() {
+            return path.join( this.saveFilePath, this.saveFileName )
         }
     },
     methods: {
-        isRenderer() {
-            // running in a web browser
-            if (typeof process === 'undefined') return true
-            // node-integration is disabled
-            if (!process) return true
-            // We're in node.js somehow
-            if (!process.type) return false
-            return process.type === 'renderer'
-        },
         selectDirectory() {
-            //document.querySelector('input[type="file"]').click()
-            remote.dialog.showOpenDialog( remote.getCurrentWindow(), {
-                properties: [ 'openDirectory' ]
-            })
+            remote.dialog.showOpenDialog(
+                remote.getCurrentWindow(),
+                {
+                    title: 'Choose a directory',
+                    defaultPath: this.saveFilePath,
+                    properties: [ 'openDirectory' ]
+                },
+                filePaths => {
+                    
+                    if ( filePaths && filePaths.length > 0 ) {
+                        
+                        let newPath = filePaths.pop()
+                        
+                        fs.stat( newPath, ( err, stats ) => {
+                            
+                            if ( err ) return
+                            
+                            let hasPath = false
+                            
+                            this.homeFolders.forEach( dir => {
+                                if ( dir.path === newPath )
+                                    hasPath = true
+                            })
+                            
+                            if ( !hasPath )
+                                this.homeFolders.push({
+                                    name: newPath.split('/').pop(),
+                                    path: newPath
+                                })
+                            
+                            this.saveFilePath = newPath
+                        
+                        })
+                        
+                    }
+                    
+                }
+            )
         },
-        updateSaveFilePath() {
-            //this.saveFilePath = ''
-            console.log( arguments )
+        copyToClipboard() {
+            
+            this.btnCopyToClipboardEnabled = false
+            
+            remote.clipboard.writeImage( this.nativeImageInstance )
+            
+            this.btnCopyToClipboardLabel = 'Copied to Clipboard!'
+            clearTimeout( this.btnCopyToClipboardTimer )
+            this.btnCopyToClipboardTimer = setTimeout( () => {
+                this.btnCopyToClipboardLabel = 'Copy to Clipboard'
+                this.btnCopyToClipboardEnabled = true
+            }, 2000 )
+            
+        },
+        saveToPath() {
+            
+            this.btnSaveEnabled = false
+            this.btnSaveLabel = 'Saving...'
+            
+            setTimeout( () => {
+                fs.stat( this.saveFilePath, ( err, stats ) => {
+                    if ( err ) return window.alert( 'Invalid path ' + this.saveFilePath )
+                    console.log( 'Saving to', this.fullSavePath )
+                    fs.writeFile(
+                        this.fullSavePath,
+                        this.nativeImageInstance.toPNG(),
+                        err => {
+                            if ( err ) window.alert( 'Error saving image\n' + JSON.stringify( err ) )
+                            this.btnSaveEnabled = true
+                            this.btnSaveLabel = 'Save'
+                        }
+                    )
+                })
+            }, 10 )
+            
         }
     },
     mounted() {
@@ -56,7 +123,9 @@ export default {
         if ( !this.hasPendingFile )
             router.replace( '/' )
         
-        console.info( this.saveFilePath )
+        console.info( this.saveFilePath, remote )
+        
+        this.nativeImageInstance = remote.nativeImage.createFromPath( this.pendingFilePath )
         
         fs.readdir( this.homePath, ( err, items ) => {
             this.homeFolders = items
@@ -78,26 +147,38 @@ export default {
 
 <template lang="pug">
 
-.root
+#page-post-process
     
     .container-fluid: .row: .col-12.pt-3
+        
         .row: .col
-            h4 Save Screenshot {{ homeFoldersDivider }}
+            h4 Save Screenshot
+        
         .row
-            .col-4
+            .col
                 img(:src="'file:///' + pendingFilePath", width="100%")
-            .col-8.no-padding-left
-                .form-group
+        
+        .row.mt-3
+            .col
+                #save-options.form-group
                     input.form-control(type="text", v-model="saveFileName")
-                    select(v-model="saveFilePath").custom-select.mt-1
-                        option(v-for="dir in homeFolders", :value="dir.path") {{ dir.name }}
-                    button.btn.btn-default.mt-1.ml-1(@click="selectDirectory") ...
+                    .d-flex.flex-nowrap
+                        select(v-model="saveFilePath").custom-select.mt-1
+                            option(v-for="dir in homeFolders", :value="dir.path") {{ dir.name }}
+                        button.btn.btn-default.mt-1.ml-1(@click="selectDirectory") ...
     
     footer.footer
         .container-fluid: .row
             .col
-                button.btn.btn-secondary Copy to Clipboard
+                button.btn(
+                    @click="copyToClipboard",
+                    v-bind:class="btnCopyToClipboardEnabled ? 'btn-secondary' : 'btn-success'")
+                    | {{ btnCopyToClipboardLabel }}
             .col.text-right
-                button.btn.btn-primary Save
+                button.btn(
+                    @click="saveToPath",
+                    :disabled="!btnSaveEnabled",
+                    v-bind:class="btnSaveEnabled ? 'btn-primary' : 'btn-disabled'")
+                    | {{ btnSaveLabel }}
 
 </template>
