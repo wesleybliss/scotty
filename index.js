@@ -3,6 +3,7 @@
 const electron = require('electron')
 const desktopCapturer = electron.desktopCapturer
 const shell = electron.shell
+const ipcMain = electron.ipcMain
 
 
 const app = electron.app
@@ -54,3 +55,20 @@ app.on( 'activate', () => {
 app.on( 'ready', () => {
 	mainWindow = createMainWindow()
 })
+
+ipcMain.on( 'browse-folder', ( event, arg ) => {
+    console.log( 'sending res-browse-folder' )
+    event.sender.send( 'res-browse-folder', 'foo' )
+})
+
+const isRenderer() {
+    // running in a web browser
+    if (typeof process === 'undefined') return true
+    // node-integration is disabled
+    if (!process) return true
+    // We're in node.js somehow
+    if (!process.type) return false
+    return process.type === 'renderer'
+}
+
+console.info( 'isRenderer? ' + (isRenderer() ? 'yes' : 'no') )

@@ -1,9 +1,12 @@
 <script>
 
-import Counter from '../components/Counter'
+import router from '../lib/router'
+import { mapGetters, mapActions } from 'vuex'
+import { remote } from 'electron'
+import { takeScreenshot } from '../lib/screenshot'
 
 export default {
-    name: 'Root',
+    name: 'Home',
     data: () => {
         const TYPES = {
             WHOLE_SCREEN: 'whole-screen',
@@ -15,8 +18,33 @@ export default {
             type: TYPES.WHOLE_SCREEN
         }
     },
-    components: {
-        Counter
+    computed: {
+        ...mapGetters({
+            pendingFilePath: 'getPendingFilePath'
+        })
+    },
+    methods: {
+        ...mapActions([
+            'setPendingFilePath'
+        ]),
+        captureScreenshot() {
+            
+            remote.getCurrentWindow().hide()
+            
+            setTimeout( () => {
+                takeScreenshot()
+                    .then( screenshotPath => {
+                        this.setPendingFilePath( screenshotPath )
+                        router.push( '/post-process' )
+                        remote.getCurrentWindow().show()
+                    })
+                    .catch( err => console.error )
+            }, 500 )
+            
+        }
+    },
+    mounted() {
+        
     }
 }
 
@@ -29,7 +57,7 @@ export default {
     .container-fluid: .row: .col-12.pt-3
         //- router-link(to="/select-area") Canvas
         .row: .col
-            h4 Take Screenshot
+            h4 Take Screenshot {{ pendingFilePath }}
         .row: .col
             label
                 input(v-model="type", type="radio", name="type", value="whole-screen")
@@ -48,6 +76,6 @@ export default {
             .col
                 button.btn.btn-secondary Cancel
             .col.text-right
-                button.btn.btn-primary Take Screenshot
+                button.btn.btn-primary(@click="captureScreenshot") Take Screenshot
 
 </template>

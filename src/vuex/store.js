@@ -1,23 +1,24 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import * as getters from './getters'
+import * as actions from './actions'
+import mutations from './mutations'
 
-Vue.use(Vuex)
+const debug = process.env.NODE_ENV !== 'production'
+
+Vue.config.debug = debug
+
+Vue.use( Vuex )
 
 const state = {
-    count: 0
-}
-
-const mutations = {
-    INCREMENT(state) {
-        state.count++
-    },
-    DECREMENT(state) {
-        state.count--
-    }
+    pendingFilePath: null
 }
 
 const store = new Vuex.Store({
+    strict: debug,
     state,
+    getters,
+    actions,
     mutations,
 })
 
