@@ -1,9 +1,10 @@
 <script>
 
+import { remote, screen } from 'electron'
 import { takeScreenshot } from '../lib/screenshot'
 
 export default {
-    name: 'Canvas',
+    name: 'SelectArea',
     data: () => {
         return {
             canvas: null,
@@ -91,22 +92,36 @@ export default {
         let backgroundCanvas = document.getElementById('canvas-background')
         let backgroundContext = backgroundCanvas.getContext('2d')
         
-        takeScreenshot()
-            .then( screenshotPath => {
-                
-                let image = new Image()
-                
-                image.onload = () => {
-                    let w = this.canvas.width
-                    let h = this.resizeHeightAR( image.width, image.height, w )
-                    // image, dx, dy, dWidth, dHeight
-                    backgroundContext.drawImage( image, 0, 0, w, h )
-                }
-                
-                image.src = 'file:///' + screenshotPath
-                
-            })
-            .catch( err => console.error )
+        let display = screen.getPrimaryDisplay()
+        remote.getCurrentWindow().hide()
+        remote.getCurrentWindow().setSize( display.workArea.width, display.workArea.height )
+        
+        setTimeout( () => {
+            
+            takeScreenshot()
+                .then( screenshotPath => {
+                    
+                    let image = new Image()
+                    
+                    image.onload = () => {
+                        
+                        let w = this.canvas.width
+                        let h = this.resizeHeightAR( image.width, image.height, w )
+                        
+                        // image, dx, dy, dWidth, dHeight
+                        backgroundContext.drawImage( image, 0, 0, w, h )
+                        
+                        remote.getCurrentWindow().show()
+                        
+                    }
+                    
+                    image.src = 'file:///' + screenshotPath
+                    
+                })
+                .catch( err => console.error )
+            
+        }, 500 )
+        
     }
 }
 

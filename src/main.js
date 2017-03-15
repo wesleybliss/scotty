@@ -4,7 +4,7 @@ import router from './lib/router'
 import store from './vuex/store'
 
 const app = new Vue({
-  router,
-  store,
-  ...App
-}).$mount('#app');
+    router,
+    store,
+    ...App
+}).$mount('#app')

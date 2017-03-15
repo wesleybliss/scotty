@@ -53,17 +53,22 @@ function createWindow () {
   loadSettings(program.settings)
 
   const options = {
-    width: 1920,
-    height: 1080,
-    frame: false/*,
+    width: 600,
+    height: 400/*,
+    frame: false*//*,
     transparent: true*/
   }
 
-  if (process.env['NODE_ENV'] !== 'dev') {
+  /*if (process.env['NODE_ENV'] !== 'dev') {
     // Add kiosk settings to the window
     options.kiosk = true
     options.autoHideMenuBar = true
-  } else {
+  } else {*/
+  if (process.env['NODE_ENV'] === 'dev') {
+    
+    //options.kiosk = true
+    options.autoHideMenuBar = true
+    
     // Open dev tools and devtron in dev mode
     require('devtron').install()
 
