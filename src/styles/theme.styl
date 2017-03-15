@@ -1,9 +1,13 @@
 
+$footer-height = 60px
+
+
 html
     height 100%
 
 body
     font caption
+    padding-bottom $footer-height
 
 .no-padding
     padding-left 0
@@ -41,10 +45,26 @@ body
     width 800px
     margin-left -25%
 
+#page-home
+    .list-group-item
+        padding .35rem 0.35rem
+        img
+            padding 1px
+            border 1px #777 solid
+        span
+            margin-left 8px
+            margin-right @margin-left
+    .list-group-item.active
+        color #fefefe
+        /*font-weight bold*/
+
 #page-post-process
     #save-options
         select
             width 100%
+
+.dropdown-only-toggle
+    -webkit-appearance initial
 
 footer
     position fixed

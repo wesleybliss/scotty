@@ -41,6 +41,9 @@ export default {
         }
     },
     methods: {
+        quitApp() {
+            remote.app.quit()
+        },
         selectDirectory() {
             remote.dialog.showOpenDialog(
                 remote.getCurrentWindow(),
@@ -152,7 +155,13 @@ export default {
     .container-fluid: .row: .col-12.pt-3
         
         .row: .col
-            h4 Save Screenshot
+            h4
+                | Save Screenshot
+                button.close(
+                    type="button",
+                    aria-label="Close",
+                    @click="quitApp")
+                    span(aria-hidden="true") &times;
         
         .row
             .col
