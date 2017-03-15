@@ -53,8 +53,8 @@ function createWindow () {
   loadSettings(program.settings)
 
   const options = {
-    width: 600,
-    height: 400/*,
+    width: 400,
+    height: 300/*,
     frame: false*//*,
     transparent: true*/
   }
