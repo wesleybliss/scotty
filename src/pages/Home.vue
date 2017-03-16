@@ -3,11 +3,13 @@
 import router from '../lib/router'
 import { mapGetters, mapActions } from 'vuex'
 import { remote } from 'electron'
+import { flankTruncateString } from '../lib/text'
 import { getSources, takeScreenshot } from '../lib/screenshot'
 
 export default {
     name: 'Home',
     data: () => {
+        // Types of screenshots supported
         const TYPES = {
             WHOLE_SCREEN: 'whole-screen',
             CURRENT_WINDOW: 'current-window',
@@ -16,10 +18,9 @@ export default {
         }
         return {
             TYPES,
-            type: TYPES.WHOLE_SCREEN,
-            sources: [],
-            specificWindow: '',
-            dropdownSourcesClass: ''
+            type: TYPES.WHOLE_SCREEN, // Default type
+            sources: [],              // Screen/window sources
+            specificWindow: ''        // The window specified for capture, if any
         }
     },
     computed: {
@@ -35,16 +36,16 @@ export default {
             remote.app.quit()
         },
         simplifyWindowName( name ) {
-            if ( name.length < 60 ) return name
-            let quarterLen = Math.min( 22, ( name.length / 4 ) )
-            return name.substring( 0, quarterLen ) +
-                ' ... ' + name.substring( name.length - quarterLen )
+            return flankTruncateString( name )
         },
         selectSource( name ) {
+            
+            // Auto switch to the correct the type
             if ( this.type !== this.TYPES.SPECIFIC_WINDOW )
                 this.type = this.TYPES.SPECIFIC_WINDOW
+            
             this.specificWindow = name
-            console.log( 'source', name )
+            
         },
         _captureScreenshot( optionalWindowName, redirectUri ) {
             takeScreenshot( optionalWindowName || false )
