@@ -138,6 +138,8 @@ export default {
             
             let tempImage = new Image()
             
+            this.isCropped = true
+            
             tempImage.onload = () => {
                 
                 this.clearCanvas()
@@ -166,9 +168,9 @@ export default {
                     
                     console.info( 'Saved screenshot to', screenshotPath )
                     
-                    /*remote.getCurrentWindow().hide()
-                    remote.getCurrentWindow().setFullScreen( false )*/
-                    setTimeout( () => { router.push( '/post-process' ) }, 300 )
+                    this.isCropping = false
+                    
+                    router.push( '/post-process' )
                     
                 })
                 
@@ -208,9 +210,9 @@ export default {
 #page-select-area
     
     #viewport
-        canvas#canvas-background(width="100%", height="100%")
-        canvas#canvas(width="100%", height="100%")
-        canvas#canvas-cropped(v-show="isCropped", width="800", height="800")
+        canvas#canvas-background(v-show="!isCropped", width="100%", height="100%")
+        canvas#canvas(v-show="!isCropped", :class="isCropped ? 'canvas-cropped' : ''", width="800", height="800")
+        canvas#canvas-cropped(v-show="false", width="800", height="800")
     
     .container-fluid: .row: .col-12.pt-3
         
