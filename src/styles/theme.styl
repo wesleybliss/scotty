@@ -27,23 +27,25 @@ body
     bottom 0
     width 100%
     height 100%
-    background-color rgba(0, 255, 0, 0.3)
     z-index 999
     #canvas-background
         z-index 1000
     #canvas
         z-index 1001
 
-#canvas, #canvas-background
-    height 800px
-    border 1px #880000 solid
-    cursor crosshair
+#canvas, #canvas-background, #canvas-cropped
     position absolute
-    top 100px
-    left 50%
+    top 0
+    left 0
     right 0
-    width 800px
+    width 100%
+    height 100%
+    cursor crosshair
+
+#canvas-cropped
+    left 50%
     margin-left -25%
+    cursor pointer
 
 #page-home
     .list-group-item

@@ -36,6 +36,9 @@ export default {
             hasPendingFile: 'hasPendingFile',
             pendingFilePath: 'getPendingFilePath'
         }),
+        pendingFileUri() {
+            return 'file:///' + this.pendingFilePath + '?' + Date.now()
+        },
         fullSavePath() {
             return path.join( this.saveFilePath, this.saveFileName )
         }
@@ -117,7 +120,7 @@ export default {
                         }
                     )
                 })
-            }, 10 )
+            }, 100 )
             
         }
     },
@@ -125,6 +128,9 @@ export default {
         
         if ( !this.hasPendingFile )
             router.replace( '/' )
+        
+        remote.getCurrentWindow().setFullScreen( false )
+        remote.getCurrentWindow().show()
         
         console.info( this.saveFilePath, remote )
         
@@ -165,7 +171,7 @@ export default {
         
         .row
             .col
-                img(:src="'file:///' + pendingFilePath", width="100%")
+                img(:src="pendingFileUri")
         
         .row.mt-3
             .col

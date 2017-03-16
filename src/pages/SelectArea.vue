@@ -1,5 +1,10 @@
 <script>
 
+import os from 'os'
+import path from 'path'
+import fs from 'fs'
+import router from '../lib/router'
+import { mapGetters } from 'vuex'
 import { remote, screen } from 'electron'
 import { takeScreenshot } from '../lib/screenshot'
 
@@ -9,6 +14,7 @@ export default {
         return {
             canvasBackground: null,
             canvas: null,
+            canvasCropped: null,
             context: null,
             startX: null,
             endX: null,
@@ -20,12 +26,47 @@ export default {
                 y: 0,
                 width: 0,
                 height: 0
-            }
+            },
+            isCropped: false
+        }
+    },
+    computed: {
+        ...mapGetters({
+            hasPendingFile: 'hasPendingFile',
+            pendingFilePath: 'getPendingFilePath',
+            windowNormalSize: 'getWindowNormalSize'
+        }),
+        pendingFileUri() {
+            return 'file:///' + this.pendingFilePath + '?' + Date.now()
         }
     },
     methods: {
+        setCanvasSizes( width, height ) {
+            console.info( 'Resizing canvases to', width, height )
+            Array( this.canvasBackground, this.canvas, this.canvasCropped )
+                .forEach( canvas => {
+                    canvas.width = width
+                    canvas.height = height
+                    canvas.style.width = width
+                    canvas.style.height = height
+                })
+        },
         clearCanvas() {
             this.context.clearRect( 0, 0, this.canvas.width, this.canvas.height )
+        },
+        drawInitialCanvasImage() {
+            
+            let backgroundCanvas = document.getElementById('canvas-background')
+            let backgroundContext = backgroundCanvas.getContext('2d')
+            let image = new Image()
+            
+            image.onload = () => {
+                this.setCanvasSizes( image.width, image.height )
+                backgroundContext.drawImage( image, 0, 0, image.width, image.height )
+            }
+            
+            image.src = this.pendingFileUri
+            
         },
         mouseDown( event ) {
             event.preventDefault()
@@ -98,9 +139,11 @@ export default {
             let tempImage = new Image()
             
             tempImage.onload = () => {
+                
                 this.clearCanvas()
+                this.setCanvasSizes( this.cropArea.width, this.cropArea.height )
+                
                 this.context.drawImage(
-                    // imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight
                     tempImage,
                     this.cropArea.x,
                     this.cropArea.y,
@@ -110,6 +153,25 @@ export default {
                     this.cropArea.width,
                     this.cropArea.height
                 )
+                
+                let nativeImageInstance = remote.nativeImage
+                    .createFromDataURL( this.canvas.toDataURL( 'image/png', 1 ) )
+                
+                let screenshotPath = path.join( os.tmpdir(), 'shotty-screenshot.png' )
+                
+                fs.writeFile( screenshotPath, nativeImageInstance.toPNG(), err => {
+                    
+                    if ( err ) return window.alert(
+                        'Error cropping screenshot\n' + JSON.stringify( err ) )
+                    
+                    console.info( 'Saved screenshot to', screenshotPath )
+                    
+                    /*remote.getCurrentWindow().hide()
+                    remote.getCurrentWindow().setFullScreen( false )*/
+                    setTimeout( () => { router.push( '/post-process' ) }, 300 )
+                    
+                })
+                
             }
             
             tempImage.src = this.canvasBackground.toDataURL( 'image/png', 1 )
@@ -118,46 +180,23 @@ export default {
     },
     mounted() {
         
+        if ( !this.hasPendingFile )
+            router.replace( '/' )
+        
         this.canvasBackground = document.getElementById('canvas-background')
         this.canvas = document.getElementById('canvas')
+        this.canvasCropped = document.getElementById('canvas-cropped')
         this.context = this.canvas.getContext('2d')
         
         this.canvas.onmousedown = this.mouseDown
         this.canvas.onmouseup = this.mouseUp
         this.canvas.onmousemove = this.trackMovement
         
-        let backgroundCanvas = document.getElementById('canvas-background')
-        let backgroundContext = backgroundCanvas.getContext('2d')
+        /*let display = screen.getPrimaryDisplay()
+        remote.getCurrentWindow().setSize( display.workArea.width, display.workArea.height )*/
+        remote.getCurrentWindow().setFullScreen( true )
         
-        let display = screen.getPrimaryDisplay()
-        remote.getCurrentWindow().hide()
-        remote.getCurrentWindow().setSize( display.workArea.width, display.workArea.height )
-        
-        setTimeout( () => {
-            
-            takeScreenshot()
-                .then( screenshotPath => {
-                    
-                    let image = new Image()
-                    
-                    image.onload = () => {
-                        
-                        let w = this.canvas.width
-                        let h = this.resizeHeightAR( image.width, image.height, w )
-                        
-                        // image, dx, dy, dWidth, dHeight
-                        backgroundContext.drawImage( image, 0, 0, w, h )
-                        
-                        remote.getCurrentWindow().show()
-                        
-                    }
-                    
-                    image.src = 'file:///' + screenshotPath
-                    
-                })
-                .catch( err => console.error )
-            
-        }, 500 )
+        this.drawInitialCanvasImage()
         
     }
 }
@@ -166,13 +205,18 @@ export default {
 
 <template lang="pug">
 
-div#section-canvas
+#page-select-area
     
     #viewport
-        canvas#canvas-background(width="800", height="800")
-        canvas#canvas(width="800", height="800")
+        canvas#canvas-background(width="100%", height="100%")
+        canvas#canvas(width="100%", height="100%")
+        canvas#canvas-cropped(v-show="isCropped", width="800", height="800")
     
-    h1 Hello
-    div Mouse is: {{ mouseIsDown ? 'down' : 'up' }}
+    .container-fluid: .row: .col-12.pt-3
+        
+        .row: .col
+            h4
+                | Select Area
+                //- small &nbsp; (MOUSE: {{ mouseIsDown ? 'DOWN' : 'UP' }})
 
 </template>

@@ -11,6 +11,12 @@ Vue.config.debug = debug
 Vue.use( Vuex )
 
 const state = {
+    window: {
+        normalSize: {
+            width: 400,
+            height: 300
+        }
+    },
     pendingFilePath: null
 }
 

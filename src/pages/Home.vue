@@ -79,8 +79,12 @@ export default {
         }
     },
     mounted() {
+        
+        remote.getCurrentWindow().setFullScreen( false )
+        
         // @todo Also make a list of common excludes, like "nautilus-desktop"
         let sourcesExclude = [ 'Entire screen', 'Screen 1' ]
+        
         getSources()
             .then( sources => sources.filter( s => !sourcesExclude.includes( s.name ) ) )
             .then( sources => { this.sources = sources } )
@@ -89,6 +93,7 @@ export default {
                 console.error( err )
                 this.sources = [ 'Error finding sources' ]
             })
+        
     }
 }
 
