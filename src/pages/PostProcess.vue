@@ -5,7 +5,6 @@ import { mapGetters, mapActions } from 'vuex'
 import { remote } from 'electron'
 import fs from 'fs'
 import path from 'path'
-import { takeScreenshot } from '../lib/screenshot'
 import moment from 'moment'
 
 export default {
@@ -37,6 +36,7 @@ export default {
             pendingFilePath: 'getPendingFilePath'
         }),
         pendingFileUri() {
+            // Date to cache-bust image
             return 'file:///' + this.pendingFilePath + '?' + Date.now()
         },
         fullSavePath() {
@@ -46,6 +46,10 @@ export default {
     methods: {
         quitApp() {
             remote.app.quit()
+        },
+        onImageLoaded() {
+            let img = document.querySelector('img#preview')
+            remote.getCurrentWindow().setSize( 400, img.height + 230 )
         },
         selectDirectory() {
             remote.dialog.showOpenDialog(
@@ -171,7 +175,7 @@ export default {
         
         .row
             .col
-                img(:src="pendingFileUri")
+                img#preview(:src="pendingFileUri", @load="onImageLoaded")
         
         .row.mt-3
             .col

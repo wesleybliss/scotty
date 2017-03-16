@@ -81,6 +81,7 @@ export default {
     mounted() {
         
         remote.getCurrentWindow().setFullScreen( false )
+        remote.getCurrentWindow().setSize( 400, 300 )
         
         // @todo Also make a list of common excludes, like "nautilus-desktop"
         let sourcesExclude = [ 'Entire screen', 'Screen 1' ]
