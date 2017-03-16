@@ -49,7 +49,7 @@ export default {
         },
         onImageLoaded() {
             let img = document.querySelector('img#preview')
-            remote.getCurrentWindow().setSize( 400, img.height + 230 )
+            remote.getCurrentWindow().setSize( 400, img.height + 380 )
         },
         selectDirectory() {
             remote.dialog.showOpenDialog(
@@ -185,6 +185,23 @@ export default {
                         select(v-model="saveFilePath").custom-select.mt-1
                             option(v-for="dir in homeFolders", :value="dir.path") {{ dir.name }}
                         button.btn.btn-default.mt-1.ml-1(@click="selectDirectory") ...
+        
+        // @todo Maybe make these tabs
+        .row.mt-3
+            .col-5
+                hr
+            .col-2
+                .text-center or
+            .col-5
+                hr
+        
+        .row.mt-3
+            .col
+                h4 Upload Screenshot To
+                .form-group
+                    label
+                        input(type="radio", value="upload-dropbox")
+                        | &nbsp; Dropbox
     
     footer.footer
         .container-fluid: .row

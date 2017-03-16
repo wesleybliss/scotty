@@ -1,4 +1,6 @@
 
+export const getSettings = state => state.settings
+
 export const getWindowNormalSize = state => state.window.normalSize
 
 export const getPendingFilePath = state => state.pendingFilePath

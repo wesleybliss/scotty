@@ -126,7 +126,7 @@ export default {
             label
                 input(v-model="type", type="radio", name="type", value="specific-window")
                 span &nbsp;Grab
-                i(v-if="specificWindow") &nbsp;{{ specificWindow }}
+                i(v-if="specificWindow") &nbsp;{{ simplifyWindowName( specificWindow ) }}
                 .list-group.mt-2(v-if="type === TYPES.SPECIFIC_WINDOW")
                     a.list-group-item.list-group-item-action(
                         v-for="source in sources",
@@ -139,6 +139,8 @@ export default {
         .container-fluid: .row
             .col
                 button.btn.btn-secondary(@click="quitApp") Cancel
+            //- .col.text-center
+            //-     router-link.btn.btn-secondary(tag="button", to="/settings") ST
             .col.text-right
                 button.btn.btn-primary(@click="captureScreenshot") Take Screenshot
 
