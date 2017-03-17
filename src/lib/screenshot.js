@@ -54,7 +54,7 @@ export const takeScreenshot = sourceName => {
                 
                 if ( filter.includes( source.name ) ) {
                     
-                    let screenshotPath = path.join( os.tmpdir(), 'shotty-screenshot.png' )
+                    let screenshotPath = path.join( os.tmpdir(), 'scotty-screenshot.png' )
                     
                     fs.writeFile( screenshotPath, source.thumbnail.toPng(), error => {
                         

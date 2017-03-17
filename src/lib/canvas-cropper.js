@@ -240,7 +240,7 @@ export default class CanvasCropper {
             let nativeImageInstance = remote.nativeImage
                 .createFromDataURL( this.canvas.toDataURL( 'image/png', 1 ) )
             
-            let screenshotPath = path.join( os.tmpdir(), 'shotty-screenshot.png' )
+            let screenshotPath = path.join( os.tmpdir(), 'scotty-screenshot.png' )
             
             fs.writeFile( screenshotPath, nativeImageInstance.toPNG(), err => {
                 

@@ -1,7 +1,7 @@
 {
-  "name": "shotty",
+  "name": "scotty",
   "version": "1.0.0",
-  "description": "A Neodymium project",
+  "description": "A cross platform screenshot tool written in Vue & Electron",
   "author": "Wesley Bliss <wesley.bliss@gmail.com>",
   "private": true,
   "scripts": {
