@@ -12,13 +12,20 @@ import { clipboard } from 'electron'
 export default {
     name: 'PostProcess',
     data: () => {
+        const TARGETS = {
+            LOCAL: 'local',
+            DROPBOX: 'dropbox'
+        }
         return {
+            
+            TARGETS,
             
             homePath: remote.app.getPath('home'),
             homeFolders: [],
             picturesPath: remote.app.getPath('pictures'),
             saveFileName: 'Screenshot from ' + moment().format( 'YYYY-MM-DD h-mm-ssa' ) + '.png',
             saveFilePath: remote.app.getPath('pictures'),
+            saveTarget: TARGETS.LOCAL,
             
             nativeImageInstance: null,
             
@@ -110,6 +117,15 @@ export default {
             }, 2000 )
             
         },
+        saveScreenshot() {
+            switch ( this.saveTarget ) {
+                case this.TARGETS.DROPBOX:
+                    return this.uploadToDropbox()
+                case this.TARGETS.LOCAL:
+                default:
+                    return this.saveToPath()
+            }
+        },
         saveToPath() {
             
             this.btnSaveEnabled = false
@@ -123,37 +139,9 @@ export default {
                         this.fullSavePath,
                         this.nativeImageInstance.toPNG(),
                         err => {
-                            
                             if ( err ) window.alert( 'Error saving image\n' + JSON.stringify( err ) )
-                            
-                            if ( !this.uploadOptionDropbox ) {
-                                this.btnSaveEnabled = true
-                                this.btnSaveLabel = 'Save'
-                                return
-                            }
-                            
-                            this.uploadToDropbox()
-                                .then( meta => {
-                                    return Promise.all([
-                                        Promise.resolve( meta ),
-                                        this.getDropboxSharedLink( meta )
-                                    ])
-                                })
-                                .then( ([ meta, shareLink ]) => {
-                                    console.info( meta, shareLink )
-                                    remote.clipboard.writeText( shareLink.url )
-                                    new Notification( 'Scotty', {
-                                        body: 'Dropbox screenshot copied to clipboard'
-                                    })
-                                    this.btnSaveEnabled = true
-                                    this.btnSaveLabel = 'Save'
-                                })
-                                .catch( err => {
-                                    console.error( err )
-                                    this.btnSaveEnabled = true
-                                    this.btnSaveLabel = 'Save'
-                                })
-                            
+                            this.btnSaveEnabled = true
+                            this.btnSaveLabel = 'Save'
                         }
                     )
                 })
@@ -161,6 +149,10 @@ export default {
             
         },
         uploadToDropbox() {
+            
+            this.btnSaveEnabled = false
+            this.btnSaveLabel = 'Saving...'
+            
             return dropbox.filesUpload({
                 contents: this.nativeImageInstance.toPNG(),
                 path: '/' + this.saveFileName,
@@ -169,6 +161,27 @@ export default {
                 },
                 autorename: true
             })
+            .then( meta => {
+                return Promise.all([
+                    Promise.resolve( meta ),
+                    this.getDropboxSharedLink( meta )
+                ])
+            })
+            .then( ([ meta, shareLink ]) => {
+                console.info( meta, shareLink )
+                remote.clipboard.writeText( shareLink.url )
+                new Notification( 'Scotty', {
+                    body: 'Dropbox screenshot copied to clipboard'
+                })
+                this.btnSaveEnabled = true
+                this.btnSaveLabel = 'Save'
+            })
+            .catch( err => {
+                console.error( err )
+                this.btnSaveEnabled = true
+                this.btnSaveLabel = 'Save'
+            })
+            
         },
         getDropboxSharedLink( meta ) {
             // `meta` = dropbox upload response
@@ -232,6 +245,9 @@ export default {
         .row.mt-3
             .col
                 #save-options.form-group
+                    label
+                        input(v-model="saveTarget", type="radio", value="local")
+                        span.ml-1 Save File
                     input.form-control(type="text", v-model="saveFileName")
                     .d-flex.flex-nowrap
                         select(v-model="saveFilePath").custom-select.mt-1
@@ -251,10 +267,9 @@ export default {
             .col
                 h4 Upload Screenshot To
                 .form-group
-                    label.custom-control.custom-checkbox
-                        input.custom-control-input(type="checkbox", v-model="uploadOptionDropbox")
-                        span.custom-control-indicator
-                        span.custom-control-description &nbsp; Dropbox
+                    label
+                        input(v-model="saveTarget", type="radio", value="dropbox")
+                        span.ml-1 Dropbox
     
     footer.footer
         .container-fluid: .row
@@ -265,7 +280,7 @@ export default {
                     | {{ btnCopyToClipboardLabel }}
             .col.text-right
                 button.btn(
-                    @click="saveToPath",
+                    @click="saveScreenshot",
                     :disabled="!btnSaveEnabled",
                     v-bind:class="btnSaveEnabled ? 'btn-primary' : 'btn-disabled'")
                     | {{ btnSaveLabel }}
