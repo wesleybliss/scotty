@@ -15,7 +15,8 @@ const state = {
     settings: {
         accounts: {
             dropbox: {
-                connected: false
+                connected: false,
+                auth: {}
             }
         }
     },

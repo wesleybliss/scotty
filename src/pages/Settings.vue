@@ -16,6 +16,13 @@ export default {
         ...mapGetters({
             settings: 'getSettings'
         }),
+        dropboxIsEnabled() {
+            return process.env.SCOTTY_DB_CLIENT_KEY
+                && process.env.SCOTTY_DB_CLIENT_KEY.length > 0
+        },
+        dropboxPartiallyConnected() {
+            return Object.keys( this.settings.accounts.dropbox.auth ).length > 0
+        },
         dropboxStatusText() {
             return this.settings.accounts.dropbox.connected
                 ? 'Disconnect' : 'Connect'
@@ -26,7 +33,9 @@ export default {
         }
     },
     methods: {
-        
+        completeDropboxSetup() {
+            window.alert( JSON.stringify( this.settings.accounts.dropbox.auth, null, '    ' ) )
+        }
     },
     mounted() {
         
@@ -50,9 +59,18 @@ export default {
         .row
             .col
                 h5 Accounts
-                .row
+                
+                .row(v-if="dropboxIsEnabled")
                     .col
                         h6 Dropbox
-                        a.btn.btn-sm.btn-primary(:href="dropboxAuthUrl") {{ dropboxStatusText }}
+                        a.btn.btn-sm.btn-primary(:href="dropboxAuthUrl")
+                            | {{ dropboxStatusText }}
+                        button.btn.btn-sm.btn-success(v-if="dropboxPartiallyConnected", @click="completeDropboxSetup")
+                            | Complete Setup
+    
+    footer.footer
+        .container-fluid: .row
+            .col
+                router-link(to="/").btn.btn-secondary &larr; Home
 
 </template>

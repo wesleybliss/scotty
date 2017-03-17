@@ -26,7 +26,10 @@ export default {
     computed: {
         ...mapGetters({
             pendingFilePath: 'getPendingFilePath'
-        })
+        }),
+        fooEnv() {
+            return process.env.FOO
+        }
     },
     methods: {
         ...mapActions([
@@ -108,7 +111,7 @@ export default {
     .container-fluid: .row: .col-12.pt-3
         
         .row: .col
-            h4 Take Screenshot
+            h4 Take Screenshot {{ fooEnv }}
         
         .row: .col
             label

@@ -53,3 +53,5 @@ build/Release
 # Junk
 core.*
 build
+
+/.env

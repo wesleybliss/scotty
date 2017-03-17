@@ -6,6 +6,8 @@ import { remote } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import moment from 'moment'
+import { dropbox } from '../lib/dropbox'
+import { clipboard } from 'electron'
 
 export default {
     name: 'PostProcess',
@@ -26,12 +28,15 @@ export default {
             
             btnSaveEnabled: true,
             btnSaveLabel: 'Save',
-            btnSaveTimer: -1
+            btnSaveTimer: -1,
+            
+            uploadOptionDropbox: true
             
         }
     },
     computed: {
         ...mapGetters({
+            settings: 'getSettings',
             hasPendingFile: 'hasPendingFile',
             pendingFilePath: 'getPendingFilePath'
         }),
@@ -118,14 +123,59 @@ export default {
                         this.fullSavePath,
                         this.nativeImageInstance.toPNG(),
                         err => {
+                            
                             if ( err ) window.alert( 'Error saving image\n' + JSON.stringify( err ) )
-                            this.btnSaveEnabled = true
-                            this.btnSaveLabel = 'Save'
+                            
+                            if ( !this.uploadOptionDropbox ) {
+                                this.btnSaveEnabled = true
+                                this.btnSaveLabel = 'Save'
+                                return
+                            }
+                            
+                            this.uploadToDropbox()
+                                .then( meta => {
+                                    return Promise.all([
+                                        Promise.resolve( meta ),
+                                        this.getDropboxSharedLink( meta )
+                                    ])
+                                })
+                                .then( ([ meta, shareLink ]) => {
+                                    console.info( meta, shareLink )
+                                    remote.clipboard.writeText( shareLink.url )
+                                    new Notification( 'Scotty', {
+                                        body: 'Dropbox screenshot copied to clipboard'
+                                    })
+                                    this.btnSaveEnabled = true
+                                    this.btnSaveLabel = 'Save'
+                                })
+                                .catch( err => {
+                                    console.error( err )
+                                    this.btnSaveEnabled = true
+                                    this.btnSaveLabel = 'Save'
+                                })
+                            
                         }
                     )
                 })
             }, 100 )
             
+        },
+        uploadToDropbox() {
+            return dropbox.filesUpload({
+                contents: this.nativeImageInstance.toPNG(),
+                path: '/' + this.saveFileName,
+                mode: {
+                    '.tag': 'add'
+                },
+                autorename: true
+            })
+        },
+        getDropboxSharedLink( meta ) {
+            // `meta` = dropbox upload response
+            return dropbox.sharingCreateSharedLink({
+                path: meta.path_lower,
+                short_url: true
+            })
         }
     },
     mounted() {
@@ -152,6 +202,8 @@ export default {
                     }
                 })
         })
+        
+        dropbox.accessToken = this.settings.accounts.dropbox.auth.access_token
         
     }
 }
@@ -199,9 +251,10 @@ export default {
             .col
                 h4 Upload Screenshot To
                 .form-group
-                    label
-                        input(type="radio", value="upload-dropbox")
-                        | &nbsp; Dropbox
+                    label.custom-control.custom-checkbox
+                        input.custom-control-input(type="checkbox", v-model="uploadOptionDropbox")
+                        span.custom-control-indicator
+                        span.custom-control-description &nbsp; Dropbox
     
     footer.footer
         .container-fluid: .row
