@@ -111,7 +111,7 @@ export default {
     .container-fluid: .row: .col-12.pt-3
         
         .row: .col
-            h4 Take Screenshot {{ fooEnv }}
+            h4 Take Screenshot
         
         .row: .col
             label

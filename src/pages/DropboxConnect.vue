@@ -1,6 +1,7 @@
 <script>
 
 import { mapGetters, mapActions } from 'vuex'
+import { writeSettings } from '../lib/settings'
 import { dropbox, testApi } from '../lib/dropbox'
 
 export default {
@@ -49,6 +50,8 @@ export default {
         })
         
         this.setDropboxAuth( dropboxResponse )
+        
+        writeSettings( this.settings )
         
         console.log( 'Dropbox response', dropboxResponse )
         
