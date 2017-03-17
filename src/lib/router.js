@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '../pages/Home'
 import Settings from '../pages/Settings'
+import DropboxConnect from '../pages/DropboxConnect'
 import SelectArea from '../pages/SelectArea'
 import PostProcess from '../pages/PostProcess'
 import NotFound from '../components/NotFound'
@@ -18,6 +19,10 @@ export default new Router({
         {
             path: '/settings',
             component: Settings
+        },
+        {
+            path: '/settings/connect/dropbox',
+            component: DropboxConnect
         },
         {
             path: '/select-area',

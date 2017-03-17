@@ -3,11 +3,13 @@
 //import router from '../lib/router'
 import { mapGetters } from 'vuex'
 import { remote } from 'electron'
+import { dropbox } from '../lib/dropbox'
 
 export default {
     name: 'Settings',
     data: () => {
         return {
+            
         }
     },
     computed: {
@@ -17,6 +19,10 @@ export default {
         dropboxStatusText() {
             return this.settings.accounts.dropbox.connected
                 ? 'Disconnect' : 'Connect'
+        },
+        dropboxAuthUrl() {
+            return dropbox.getAuthenticationUrl(
+                'http://localhost:8080/settings/connect/dropbox' )
         }
     },
     methods: {
@@ -47,6 +53,6 @@ export default {
                 .row
                     .col
                         h6 Dropbox
-                        button.btn.btn-sm.btn-primary {{ dropboxStatusText }}
+                        a.btn.btn-sm.btn-primary(:href="dropboxAuthUrl") {{ dropboxStatusText }}
 
 </template>

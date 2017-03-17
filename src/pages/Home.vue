@@ -139,8 +139,8 @@ export default {
         .container-fluid: .row
             .col
                 button.btn.btn-secondary(@click="quitApp") Cancel
-            //- .col.text-center
-            //-     router-link.btn.btn-secondary(tag="button", to="/settings") ST
+            .col.text-center
+                router-link.btn.btn-secondary(tag="button", to="/settings?test=foobar") ST
             .col.text-right
                 button.btn.btn-primary(@click="captureScreenshot") Take Screenshot
 
