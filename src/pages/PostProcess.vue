@@ -150,6 +150,22 @@ export default {
         },
         uploadToDropbox() {
             
+            let dropboxConnected = false
+            try {
+                dropboxConnected = Object.keys(
+                    this.settings.accounts.dropbox.auth ).length > 0
+            }
+            catch ( e ) {}
+            
+            if ( !dropboxConnected ) {
+                let redirectToSettings = window.confirm(
+                    'Looks like you haven\'t connected Dropbox yet.\n' +
+                    'Would you like to go to settings?' )
+                return redirectToSettings
+                    ? router.push( '/settings' )
+                    : false
+            }
+            
             this.btnSaveEnabled = false
             this.btnSaveLabel = 'Saving...'
             
