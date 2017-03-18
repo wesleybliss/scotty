@@ -26,7 +26,10 @@ export default {
     computed: {
         ...mapGetters({
             pendingFilePath: 'getPendingFilePath'
-        })
+        }),
+        fooEnv() {
+            return process.env.FOO
+        }
     },
     methods: {
         ...mapActions([
@@ -126,7 +129,7 @@ export default {
             label
                 input(v-model="type", type="radio", name="type", value="specific-window")
                 span &nbsp;Grab
-                i(v-if="specificWindow") &nbsp;{{ specificWindow }}
+                i(v-if="specificWindow") &nbsp;{{ simplifyWindowName( specificWindow ) }}
                 .list-group.mt-2(v-if="type === TYPES.SPECIFIC_WINDOW")
                     a.list-group-item.list-group-item-action(
                         v-for="source in sources",
@@ -137,9 +140,11 @@ export default {
     
     footer.footer
         .container-fluid: .row
-            .col
+            .col-5
                 button.btn.btn-secondary(@click="quitApp") Cancel
-            .col.text-right
+            .col-2.text-center
+                router-link.btn.btn-secondary(tag="button", to="/settings?test=foobar") ST
+            .col-5.text-right
                 button.btn.btn-primary(@click="captureScreenshot") Take Screenshot
 
 </template>

@@ -6,17 +6,26 @@ import { remote } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import moment from 'moment'
+import { dropbox } from '../lib/dropbox'
+import { clipboard } from 'electron'
 
 export default {
     name: 'PostProcess',
     data: () => {
+        const TARGETS = {
+            LOCAL: 'local',
+            DROPBOX: 'dropbox'
+        }
         return {
+            
+            TARGETS,
             
             homePath: remote.app.getPath('home'),
             homeFolders: [],
             picturesPath: remote.app.getPath('pictures'),
             saveFileName: 'Screenshot from ' + moment().format( 'YYYY-MM-DD h-mm-ssa' ) + '.png',
             saveFilePath: remote.app.getPath('pictures'),
+            saveTarget: TARGETS.LOCAL,
             
             nativeImageInstance: null,
             
@@ -26,12 +35,15 @@ export default {
             
             btnSaveEnabled: true,
             btnSaveLabel: 'Save',
-            btnSaveTimer: -1
+            btnSaveTimer: -1,
+            
+            uploadOptionDropbox: true
             
         }
     },
     computed: {
         ...mapGetters({
+            settings: 'getSettings',
             hasPendingFile: 'hasPendingFile',
             pendingFilePath: 'getPendingFilePath'
         }),
@@ -49,7 +61,7 @@ export default {
         },
         onImageLoaded() {
             let img = document.querySelector('img#preview')
-            remote.getCurrentWindow().setSize( 400, img.height + 230 )
+            remote.getCurrentWindow().setSize( 400, img.height + 380 )
         },
         selectDirectory() {
             remote.dialog.showOpenDialog(
@@ -105,6 +117,15 @@ export default {
             }, 2000 )
             
         },
+        saveScreenshot() {
+            switch ( this.saveTarget ) {
+                case this.TARGETS.DROPBOX:
+                    return this.uploadToDropbox()
+                case this.TARGETS.LOCAL:
+                default:
+                    return this.saveToPath()
+            }
+        },
         saveToPath() {
             
             this.btnSaveEnabled = false
@@ -126,6 +147,48 @@ export default {
                 })
             }, 100 )
             
+        },
+        uploadToDropbox() {
+            
+            this.btnSaveEnabled = false
+            this.btnSaveLabel = 'Saving...'
+            
+            return dropbox.filesUpload({
+                contents: this.nativeImageInstance.toPNG(),
+                path: '/' + this.saveFileName,
+                mode: {
+                    '.tag': 'add'
+                },
+                autorename: true
+            })
+            .then( meta => {
+                return Promise.all([
+                    Promise.resolve( meta ),
+                    this.getDropboxSharedLink( meta )
+                ])
+            })
+            .then( ([ meta, shareLink ]) => {
+                console.info( meta, shareLink )
+                remote.clipboard.writeText( shareLink.url )
+                new Notification( 'Scotty', {
+                    body: 'Dropbox screenshot copied to clipboard'
+                })
+                this.btnSaveEnabled = true
+                this.btnSaveLabel = 'Save'
+            })
+            .catch( err => {
+                console.error( err )
+                this.btnSaveEnabled = true
+                this.btnSaveLabel = 'Save'
+            })
+            
+        },
+        getDropboxSharedLink( meta ) {
+            // `meta` = dropbox upload response
+            return dropbox.sharingCreateSharedLink({
+                path: meta.path_lower,
+                short_url: true
+            })
         }
     },
     mounted() {
@@ -152,6 +215,8 @@ export default {
                     }
                 })
         })
+        
+        dropbox.accessToken = this.settings.accounts.dropbox.auth.access_token
         
     }
 }
@@ -180,11 +245,31 @@ export default {
         .row.mt-3
             .col
                 #save-options.form-group
+                    label
+                        input(v-model="saveTarget", type="radio", value="local")
+                        span.ml-1 Save File
                     input.form-control(type="text", v-model="saveFileName")
                     .d-flex.flex-nowrap
                         select(v-model="saveFilePath").custom-select.mt-1
                             option(v-for="dir in homeFolders", :value="dir.path") {{ dir.name }}
                         button.btn.btn-default.mt-1.ml-1(@click="selectDirectory") ...
+        
+        // @todo Maybe make these tabs
+        .row.mt-3
+            .col-5
+                hr
+            .col-2
+                .text-center or
+            .col-5
+                hr
+        
+        .row.mt-3
+            .col
+                h4 Upload Screenshot To
+                .form-group
+                    label
+                        input(v-model="saveTarget", type="radio", value="dropbox")
+                        span.ml-1 Dropbox
     
     footer.footer
         .container-fluid: .row
@@ -195,7 +280,7 @@ export default {
                     | {{ btnCopyToClipboardLabel }}
             .col.text-right
                 button.btn(
-                    @click="saveToPath",
+                    @click="saveScreenshot",
                     :disabled="!btnSaveEnabled",
                     v-bind:class="btnSaveEnabled ? 'btn-primary' : 'btn-disabled'")
                     | {{ btnSaveLabel }}

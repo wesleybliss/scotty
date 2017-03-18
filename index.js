@@ -36,6 +36,9 @@ const createMainWindow = () => {
     
 	win.on( 'closed', onClosed )
     
+    electron.webFrame.registerUrlSchemeAsBypassingCsp( 'http' )
+    electron.webFrame.registerUrlSchemeAsBypassingCsp( 'https' )
+    
 	return win
     
 }
