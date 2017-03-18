@@ -143,7 +143,8 @@ export default {
             .col-5
                 button.btn.btn-secondary(@click="quitApp") Cancel
             .col-2.text-center
-                router-link.btn.btn-secondary(tag="button", to="/settings?test=foobar") ST
+                router-link.btn.btn-secondary(tag="button", to="/settings?test=foobar")
+                    i.fa.fa-gear &nbsp;
             .col-5.text-right
                 button.btn.btn-primary(@click="captureScreenshot") Take Screenshot
 

@@ -1,7 +1,19 @@
 
 @charset 'UTF-8'
 
+$fa-font-path = "~fa-stylus/fonts/"
+$fa-font-size-base      ?= 14px
+$fa-line-height-base    ?= 1
+$fa-css-prefix          ?= fa
+$fa-version             ?= "4.6.1"
+$fa-border-color        ?= #eee
+$fa-inverse             ?= #fff
+$fa-li-width            ?= (30em / 14)
+
+
+@require 'fa-stylus'
 @require '~bootstrap/dist/css/bootstrap.min.css'
 
 @require 'theme'
+@require 'icons'
 @require 'section-canvas'

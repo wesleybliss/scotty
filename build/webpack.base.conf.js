@@ -90,8 +90,8 @@ module.exports = {
     stylus: {
         use: [
             /*require('axis')({ implicit: false }),
-            require('rupture')(),
-            require('fa-stylus')()*/
+            require('rupture')(),*/
+            require('fa-stylus')()
         ],
         import: [
             path.resolve(__dirname, '../src/styles/index.styl')
