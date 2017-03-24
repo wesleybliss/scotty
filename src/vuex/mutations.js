@@ -1,7 +1,7 @@
 
 import {
     SET_SETTINGS,
-    SET_DROPBOX_CLIENT_ID,
+    SET_DROPBOX_ACCESS_TOKEN,
     SET_DROPBOX_AUTH,
     SET_PENDING_FILE_PATH
 } from './mutation-types'
@@ -13,8 +13,8 @@ export default {
         state.settings = settings
     },
     
-    [SET_DROPBOX_CLIENT_ID]( state, clientId ) {
-        state.settings.accounts.dropbox.clientId = clientId
+    [SET_DROPBOX_ACCESS_TOKEN]( state, accessToken ) {
+        state.settings.accounts.dropbox.accessToken = accessToken
     },
     
     [SET_DROPBOX_AUTH]( state, auth ) {

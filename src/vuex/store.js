@@ -18,8 +18,7 @@ const state = {
     settings: {
         accounts: {
             dropbox: {
-                connected: false,
-                clientId: null,
+                accessToken: null,
                 auth: {}
             }
         }

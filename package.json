@@ -29,10 +29,16 @@
   },
   "dependencies": {
     "babel-runtime": "^6.0.0",
+    "dropbox": "^2.5.2",
     "gsap": "^1.18.5",
     "vue": "^2.1.4",
     "vue-router": "^2.1.0",
-    "vuex": "^2.0.0"
+    "vuex": "^2.0.0",
+    
+    "electron-debug": "^1.0.1",
+    "electron-devtools-installer": "^2.0.0",
+    "electron-packager": "^7.3.0",
+    "electron-prebuilt": "1.2.6"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.7",
@@ -46,10 +52,7 @@
     "connect-history-api-fallback": "^1.1.0",
     "css-loader": "^0.23.0",
     "devtron": "^1.2.1",
-    "electron-debug": "^1.0.1",
-    "electron-devtools-installer": "^2.0.0",
-    "electron-packager": "^7.3.0",
-    "electron-prebuilt": "1.2.6",
+    
     "eslint": "^2.10.2",
     "eslint-config-standard": "^5.1.0",
     "eslint-friendly-formatter": "^2.0.5",

@@ -3,12 +3,25 @@ import { readSettings } from '../lib/settings'
 import Dropbox from 'dropbox'
 
 let settings
-try { settings = readSettings() }
-catch ( e ) { settings = {} }
 
-export const dropbox = new Dropbox({
-    clientId: settings.accounts.dropbox.clientId
-})
+try {
+    settings = readSettings()
+    console.log( 'dropbox', settings )
+}
+catch ( e ) {
+    settings = {}
+}
+
+const opts = {}
+
+try {
+    opts.accessToken = settings.accounts.dropbox.accessToken
+}
+catch ( e ) {
+    
+}
+
+export const dropbox = new Dropbox( opts )
 
 console.info(dropbox)
 

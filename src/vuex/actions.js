@@ -1,7 +1,7 @@
 
 import {
     SET_SETTINGS,
-    SET_DROPBOX_CLIENT_ID,
+    SET_DROPBOX_ACCESS_TOKEN,
     SET_DROPBOX_AUTH,
     SET_PENDING_FILE_PATH
 } from './mutation-types'
@@ -10,8 +10,8 @@ import {
 export const setSettings = ( { commit }, settings ) =>
     commit( SET_SETTINGS, settings )
 
-export const setDropboxClientId = ( { commit }, clientId ) =>
-    commit( SET_DROPBOX_CLIENT_ID, clientId )
+export const setDropboxAccessToken = ( { commit }, accessToken ) =>
+    commit( SET_DROPBOX_ACCESS_TOKEN, accessToken )
 
 export const setDropboxAuth = ( { commit }, auth ) =>
     commit( SET_DROPBOX_AUTH, auth )

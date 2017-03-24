@@ -9,7 +9,8 @@ export default {
     data: () => {
         return {
             error: null,
-            testResult: null
+            testResult: null,
+            logMessages: []
         }
     },
     computed: {
@@ -19,13 +20,27 @@ export default {
     },
     methods: {
         ...mapActions([ 'setDropboxAuth' ]),
+        log( ...args ) {
+            this.logMessages.push( args.map( a => JSON.stringify( a ) ).join(' ') )
+        },
         runTestApi() {
+            this.log( 'Checking Dropbox access token' )
+            this.log( '...', dropbox.accessToken )
+            if ( !dropbox.accessToken ) {
+                return this.log( '... Error', 'missing access token!' )
+            }
+            else {
+                this.log( '... OK' )
+            }
+            this.log( 'Fetching list of folders' )
             dropbox.filesListFolder({ path: '' })
                 .then( response => {
+                    this.log( 'Response', response )
                     console.log( response )
                     this.testResult = true
                 })
                 .catch( err => {
+                    this.log( 'Error', err )
                     console.error( err )
                     this.testResult = false
                 })
@@ -33,30 +48,11 @@ export default {
     },
     mounted() {
         
-        // After the user has authorized your app, they’ll be sent
-        // to your redirect URI, with a few query parameters:
-        // https://www.example.com/mycallback?code=<authorization code>&state=<CSRF token>
+        window.onerror = function() {
+            this.log( 'error', arguments )
+        }.bind( this )
         
-        if ( !window.location.hash || window.location.hash.indexOf( '&' ) < 1 ) {
-            this.error = 'No authorization was found in the response.'
-            return
-        }
-        
-        let dropboxResponse = {}
-        
-        window.location.hash.substring(1).split('&').forEach( x => {
-            let [ key, val ] = x.split('=')
-            dropboxResponse[key] = val
-        })
-        
-        this.setDropboxAuth( dropboxResponse )
-        
-        writeSettings( this.settings )
-        
-        console.log( 'Dropbox response', dropboxResponse )
-        
-        dropbox.accessToken = dropboxResponse.access_token
-        
+        this.runTestApi()
     }
 }
 
@@ -72,24 +68,31 @@ export default {
             .col
                 h4 Dropbox Connect
         
-        .row(v-if="settings.accounts.dropbox.auth")
+        .row(v-if="!error && (testResult !== true || testResult !== false)")
             .col
-                pre: code {{ JSON.stringify( settings.accounts.dropbox.auth, null, '    ' ) }}
+                p Testing your Dropbox connection, please wait...
         
         .row(v-if="error")
             .col
                 p There was an error connecting to your Dropbox account.
                 i {{ error }}
         
-        .row(v-if="!error")
-            .col
-                h6 Connected to Dropbox!
-                p Now let's do a test call to make sure it worked.
-                button.btn.btn-primary(@click="runTestApi") Test
-        
         .row(v-if="!error && (testResult === true || testResult === false)")
             .col
-                p: b Test Result: {{ testResult ? 'Success' : 'Failed' }}
+                div.alert.alert-danger(v-if="testResult === false", role="alert")
+                    b Test failed.&nbsp;
+                    span You're Dropbox account was not connected.
+                div.alert.alert-success(v-if="testResult === true", role="alert")
+                    b Test succeeded!&nbsp;
+                    span You're Dropbox account is now connected.
+                button.btn.btn-secondary(@click="runTestApi") Test Again
+                router-link.btn.btn-secondary.ml-2(tag="button", to="/settings") Back to Settings
+        
+        .row
+            .col
+                ul.list-group
+                    li.list-group-item(v-for="m in logMessages")
+                        pre: code {{ m }}
         
     footer.footer
         .container-fluid: .row
