@@ -1,19 +1,25 @@
 # Scotty
 
-> A Neodymium project
+> Crossplatform screenshot tool built with Vue2 & Electron
 
-[![js-standard-style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](http://standardjs.com/)
+## What?
 
-[![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
-[![forthebadge](http://forthebadge.com/images/badges/makes-people-smile.svg)](http://forthebadge.com)
-[![forthebadge](http://forthebadge.com/images/badges/uses-js.svg)](http://forthebadge.com)
-[![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
+As in, _beam me up_? Idk, Shotty was already taken.
+
+## Why?
+
+Because I love the Gnome Screenshot app, but it doesn't auto upload to Dropbox. Also I was curious about how to drag & crop a section of an HTML5 canvas element (now I know).
+
+## Known Issues
+
+* Dropbox connects, and works fine when run in dev, but doesn't work in release mode. Could be some permissions, or maybe Electron related.
 
 ## Build Setup
 
 ``` bash
 # install dependencies
-npm install
+npm i
+npm i -g gulp
 
 # serve with hot reload at localhost:8080
 # -t (or --target=) option is optionnal and override the default webpack target (https://webpack.github.io/docs/configuration.html#target)
@@ -40,7 +46,3 @@ npm run package:linux
 npm run package:win32
 npm run package:all # All platforms, all architectures
 ```
-
-For detailed explanation on how things work, checkout the [guide](http://soixantecircuits.github.io/nd/).
-
-:wq
